@@ -1,22 +1,33 @@
 package main
 
 import (
-	"fmt"
-	"github.com/aventhis/go-server/handlers"
-	"net/http"
+	"flag"
+	"github.com/BurntSushi/toml"
+	"github.com/aventhis/go-server/internal/app/apiserver"
+	"log"
 )
 
+var (
+	configPath string
+)
+
+func init() {
+	flag.StringVar(&configPath, "config-path", "configs/apiserver.toml", "path to config file")
+}
+
 func main() {
-	//  Запрашиваем случайный порт передав ":0"
-	//listener, err := net.Listen("tcp", ":0")
+	flag.Parse()
 
-	mux := http.NewServeMux()
+	config := apiserver.NewConfig()
 
-	mux.HandleFunc("/", handlers.HomeHandler)
-	mux.HandleFunc("/about", handlers.AboutHandler)
-	fmt.Println("Listening on port 8080")
-	err := http.ListenAndServe(":8080", mux)
+	_, err := toml.DecodeFile(configPath, config)
 	if err != nil {
-		fmt.Printf("Ошибка запуска сервера: %v\n", err)
+		log.Fatal(err)
 	}
+
+	s := apiserver.New(config)
+	if err := s.Start(); err != nil {
+		log.Fatal(err)
+	}
+
 }
