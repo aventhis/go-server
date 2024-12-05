@@ -33,7 +33,7 @@ func (s *APIServer) Start() error {
 
 	s.configureRouter()
 
-	if err != s.configureStore(); err != nil {
+	if err := s.configureStore(); err != nil {
 		return err
 	}
 
